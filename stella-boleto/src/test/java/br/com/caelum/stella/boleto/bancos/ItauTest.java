@@ -14,26 +14,26 @@ import br.com.caelum.stella.boleto.Datas;
 import br.com.caelum.stella.boleto.Pagador;
 
 public class ItauTest {
-	
+
 	private Boleto boleto;
 	private Itau banco = new Itau();
 	private Beneficiario beneficiario;
 
 	@Before
 	public void setUp() {
-		
-	    Datas datas = Datas.novasDatas().comDocumento(20, 03, 2013)
-	            .comProcessamento(20, 03, 2013).comVencimento(01, 04, 2013);  
 
-		    this.beneficiario = Beneficiario.novoBeneficiario().comNomeBeneficiario("Rodrigo Turini")
-	            .comAgencia("167").comCarteira("157").comCodigoBeneficiario("45145")
-	            .comNossoNumero("21897666").comDigitoNossoNumero("6");  
+		Datas datas = Datas.novasDatas().comDocumento(20, 03, 2013)
+				.comProcessamento(20, 03, 2013).comVencimento(01, 04, 2013);
 
-		    Pagador pagador = Pagador.novoPagador().comNome("Paulo Silveira");
-		    
-		    this.boleto = Boleto.novoBoleto().comDatas(datas).comBeneficiario(beneficiario)
-		    	.comBanco(banco).comPagador(pagador).comValorBoleto(2680.16)
-		    	.comNumeroDoDocumento("575");
+		this.beneficiario = Beneficiario.novoBeneficiario().comNomeBeneficiario("Rodrigo Turini")
+				.comAgencia("167").comCarteira("157").comCodigoBeneficiario("45145")
+				.comNossoNumero("21897666").comDigitoNossoNumero("6");
+
+		Pagador pagador = Pagador.novoPagador().comNome("Paulo Silveira");
+
+		this.boleto = Boleto.novoBoleto().comDatas(datas).comBeneficiario(beneficiario)
+				.comBanco(banco).comPagador(pagador).comValorBoleto(2680.16)
+				.comNumeroDoDocumento("575");
 	}
 
 	@Test
@@ -73,22 +73,22 @@ public class ItauTest {
 		String codigoDeBarras = this.banco.geraCodigoDeBarrasPara(this.boleto);
 		assertEquals("34196565500002680161572189766660167451459000", codigoDeBarras);
 	}
-	
+
 	@Test
 	public void testLinhaDoBancoItau2() {
-		 Datas datas = Datas.novasDatas().comDocumento(20, 03, 2014)
-		            .comProcessamento(20, 03, 2014).comVencimento(10, 04, 2014); 
-		
+		Datas datas = Datas.novasDatas().comDocumento(20, 03, 2014)
+				.comProcessamento(20, 03, 2014).comVencimento(10, 04, 2014);
+
 		this.beneficiario = Beneficiario.novoBeneficiario().comNomeBeneficiario("Mario Amaral")
 				.comAgencia("8462").comCarteira("174").comCodigoBeneficiario("05825")
 				.comNossoNumero("00015135").comDigitoNossoNumero("6");
-		
+
 		Pagador pagador = Pagador.novoPagador().comNome("Rodrigo de Sousa");
-	    
-	    this.boleto = Boleto.novoBoleto().comDatas(datas).comBeneficiario(beneficiario)
-	    	.comBanco(banco).comPagador(pagador).comValorBoleto(2680.16)
-	    	.comNumeroDoDocumento("575");
-		 
+
+		this.boleto = Boleto.novoBoleto().comDatas(datas).comBeneficiario(beneficiario)
+				.comBanco(banco).comPagador(pagador).comValorBoleto(2680.16)
+				.comNumeroDoDocumento("575");
+
 		this.boleto = this.boleto.comBanco(this.banco);
 		GeradorDeLinhaDigitavel gerador = new GeradorDeLinhaDigitavel();
 		String codigoDeBarras = boleto.getBanco().geraCodigoDeBarrasPara(this.boleto);
@@ -97,16 +97,49 @@ public class ItauTest {
 	}
 
 	@Test
+	public void testLinhaDoBancoItau3() {
+		Datas datas = Datas.novasDatas()
+				.comDocumento(13, 06, 2017)
+				.comProcessamento(13, 06, 2017)
+				.comVencimento(07, 06, 2017);
+
+		this.beneficiario = Beneficiario.novoBeneficiario()
+				.comNomeBeneficiario("Mario Amaral")
+				.comAgencia("0670")
+				.comCarteira("112")
+				.comCodigoBeneficiario("39221")
+				.comNossoNumero("21015827")
+				.comDigitoNossoNumero("8");
+
+		Pagador pagador = Pagador.novoPagador()
+				.comNome("Rodrigo de Sousa");
+
+		this.boleto = Boleto.novoBoleto()
+				.comDatas(datas)
+				.comBeneficiario(beneficiario)
+				.comBanco(banco)
+				.comPagador(pagador)
+				.comValorBoleto(4045.35)
+				.comNumeroDoDocumento("1413B170600");
+
+		this.boleto = this.boleto.comBanco(this.banco);
+		GeradorDeLinhaDigitavel gerador = new GeradorDeLinhaDigitavel();
+		String codigoDeBarras = boleto.getBanco().geraCodigoDeBarrasPara(this.boleto);
+		String linha = "34191.12218  01582.780670  03922.160001  6  71830000404535";
+		assertEquals(linha, gerador.geraLinhaDigitavelPara(codigoDeBarras,this.banco));
+	}
+
+	@Test
 	public void testGetImage() {
 		assertNotNull(this.banco.getImage());
 	}
-	
+
 	@Test
 	public void naoAparecerNuloEmAgenciaECodigoBeneficiarioFormatado() throws Exception {
 		this.banco = new Itau();
-		
+
 		beneficiario.comAgencia("1234").comDigitoAgencia(null).comCodigoBeneficiario("1234567").comDigitoCodigoBeneficiario(null);
-		
+
 		assertThat(banco.getAgenciaECodigoBeneficiario(beneficiario), is("1234/1234567"));
 	}
 }
